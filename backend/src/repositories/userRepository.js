@@ -23,3 +23,7 @@ export const findUserByIdWithPassword= async(userId)=>{
 export const deleteUserById = async (userId) => {
   return await User.findByIdAndDelete(userId);
 };
+
+export const updatePassword = async (userId, hashedPassword) => {
+    return await User.findByIdAndUpdate(userId, {password: hashedPassword}, { new: true })
+}
