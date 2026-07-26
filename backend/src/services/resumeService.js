@@ -1,6 +1,6 @@
 import cloudinary from "../config/cloudinary.js";
 import uploadToCloudinary from "../utils/uploadToCloudinary.js";
-import { extractTextFromPDF } from "./aiService.js";
+import { extractTextFromPDF } from "./pdfService.js";
 import { createResume, findResumeByUserId, updateResumeById } from "../repositories/resumeRepository.js";
 
 export const uploadResume = async (userId, file) => {
