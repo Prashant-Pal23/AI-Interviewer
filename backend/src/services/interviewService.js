@@ -1,8 +1,8 @@
-import { createInterview, findInterviewById, findInterviewsByUser, updateInterview, updateQuestion,} from "../repositories/interviewRepository.js";
+import { createInterview, findInterviewById, findInterviewsByUser, updateInterview, updateQuestion, updateInterviewEvaluation} from "../repositories/interviewRepository.js";
 
 import { findResumeById } from "../repositories/resumeRepository.js";
 
-import { generateInterviewQuestions, evaluateAnswer, generateInterviewReport} from "./geminiService.js";
+import { generateInterviewQuestions, evaluateEntireInterview} from "./geminiService.js";
 
 
 const validateInterviewOwnership = (interview, userId) => {
@@ -72,17 +72,10 @@ export const submitAnswerService = async ({ interviewId, userId, order, answer, 
         throw new Error("Question already answered");
     }
 
-    const evaluation = await evaluateAnswer({
-        question: question.question,
-        answer,
-    });
 
     return await updateQuestion(interviewId, order, {
         answer,
         answerDuration,
-        score: evaluation.score,
-        feedback: evaluation.feedback,
-        aiExpectedAnswer: evaluation.aiExpectedAnswer,
     });
 };
 
@@ -99,22 +92,22 @@ export const completeInterviewService = async ({ interviewId, userId, }) => {
         throw new Error("Complete all questions before finishing the interview");
     }
 
-    const report = await generateInterviewReport({
-        questions: interview.questions,
-    });
+    // const report = await generateInterviewReport({
+    //     questions: interview.questions,
+    // });
 
     const duration = Math.floor( (Date.now() - new Date(interview.startedAt).getTime()) / 1000
     );
 
-    return await updateInterview(interviewId, {
-        overallScore: report.overallScore,
-        overallFeedback: report.overallFeedback,
-        strengths: report.strengths,
-        weaknesses: report.weaknesses,
-        suggestions: report.suggestions,
-
-        duration,
-        completedAt: new Date(),
-        status: "Completed",
+    // AI evaluates the complete interview in one request
+    const evaluation = await evaluateEntireInterview({
+        questions: interview.questions,
     });
+
+
+    return await updateInterviewEvaluation(
+        interviewId,
+        evaluation,
+        duration
+    );
 };
