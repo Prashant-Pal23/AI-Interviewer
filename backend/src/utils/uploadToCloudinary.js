@@ -2,13 +2,12 @@ import cloudinary from "../config/cloudinary.js";
 
 import streamifier from "streamifier";
 
-const uploadToCloudinary = async (file) => {
-
+const uploadToCloudinary = async (file, folder, resourceType = "auto") => {
     return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
             {
-                folder: "ai-interview/resumes",
-                resource_type: "raw",
+                folder,
+                resource_type: resourceType,
                 
             },
             (error, result) => {
