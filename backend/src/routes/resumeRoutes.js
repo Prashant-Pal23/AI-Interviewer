@@ -2,7 +2,7 @@ import express from "express"
 import multer from "multer"
 
 import protect from "../middlewares/authMiddleware.js"
-import { uploadUserResume } from "../controllers/resumeController.js"
+import { getResume, uploadUserResume , analyzeResume } from "../controllers/resumeController.js"
 
 const router = express.Router()
 
@@ -20,5 +20,9 @@ const upload = multer({
 })
 
 router.post("/upload", protect, upload.single("resume"), uploadUserResume)
+
+router.get("/", protect, getResume)
+
+router.post("/analyze", protect, analyzeResume)
 
 export default router
