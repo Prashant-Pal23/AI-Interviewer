@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 
 import { findUserById, findUserByIdAndUpdate, findUserByIdWithPassword, updatePassword } from "../repositories/userRepository.js";
+import cloudinary from "../config/cloudinary.js";
+import uploadToCloudinary from "../utils/uploadToCloudinary.js";
 
 export const getProfile = async (userId) => {
     const user = await findUserById(userId);
@@ -75,4 +77,38 @@ export const changePassword = async ( userId, currentPassword, newPassword) => {
     await updatePassword(userId, hashedPassword);
 
     return;
+}
+
+export const uploadProfilePic = async (userId, file) => {
+    if (!file) {
+        throw new Error("Please upload an image.");
+    }
+
+    const user = await findUserById(userId);
+
+    if (!user) {
+        throw new Error("User not found");
+    }
+
+    const uploadedImage = await uploadToCloudinary(file,
+        "ai-interview/profile-pictures",
+        "image"
+    );
+
+    if (user.cloudinaryPublicId) {
+        await cloudinary.uploader.destroy(
+            user.cloudinaryPublicId,
+            {
+                resource_type: "image",
+            }
+        )
+
+    }
+
+    const updatedUser = await findUserByIdAndUpdate(userId, {
+        profilePic: uploadedImage.secure_url,
+        cloudinaryPublicId: uploadedImage.public_id,
+    })
+
+    return updatedUser
 }

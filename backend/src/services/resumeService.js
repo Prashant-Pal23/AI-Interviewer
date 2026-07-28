@@ -5,13 +5,15 @@ import { createResume, findResumeByUserId, updateResumeById } from "../repositor
 
 export const uploadResume = async (userId, file) => {
     
+    let uploadedFile;
+
     try {  
         const existingResume = await findResumeByUserId(userId)
         
-        const uploadedFile = await uploadToCloudinary(file);
+        uploadedFile = await uploadToCloudinary(file, "ai-interview/resumes", "raw")
         
         const extractedText = await extractTextFromPDF(file.buffer);
-        
+                
         if(!existingResume) {
             return await createResume({
                 user: userId,
@@ -22,39 +24,49 @@ export const uploadResume = async (userId, file) => {
             })
         }
 
-        await cloudinary.uploader.destroy(
-            existingResume.cloudinaryPublicId,
+        const updatedResume = await updateResumeById(
+            existingResume._id,
             {
-                resource_type: "raw"
+                resumeFileUrl: uploadedFile.secure_url,
+                cloudinaryPublicId: uploadedFile.public_id,
+                fileName: file.originalname,
+                extractedText,
+
+                atsAnalysis: {
+                    score: null,
+                    jobDescription: null,
+                    strengths: [],
+                    weaknesses: [],
+                    missingSkills: [],
+                    suggestions: [],
+                    analyzedAt: null,
+                },
             }
         )
-
-        return await updateResumeById(existingResume._id, {
-            resumeFileUrl: uploadedFile.secure_url,
-            cloudinaryPublicId: uploadedFile.public_id,
-            fileName: file.originalname,
-            extractedText,
-
-            atsAnalysis: {
-                score: null,
-                jobDescription: null,
-                strengths: [],
-                weaknesses: [],
-                missingSkills: [],
-                suggestions: [],
-                analyzedAt: null,
-            }
-        })
-
+        if (existingResume.cloudinaryPublicId) {
+            await cloudinary.uploader.destroy(
+                existingResume.cloudinaryPublicId,
+                {
+                    resource_type: "raw"
+                }
+            )
+        }
+        return updatedResume;
     } catch (error) {
+
         if (uploadedFile?.public_id) {
             await cloudinary.uploader.destroy(
                 uploadedFile.public_id,
                 {
-                    resource_type: "raw"
+                    resource_type: "raw",
                 }
-            );
+            )
         }
-        throw error;
+        throw error
     }
 }
+
+
+export const getUserResume = async (userId) => {
+    return await findResumeByUserId(userId);
+};
