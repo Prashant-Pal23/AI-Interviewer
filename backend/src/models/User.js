@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema(
             default: "",
         },
 
+        cloudinaryPublicId: {
+            type: String,
+            default: "",
+        },
+
         age: {
             type: Number,
             default: null,
