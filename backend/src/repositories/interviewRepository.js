@@ -42,3 +42,26 @@ export const updateQuestion = async ( interviewId, order, questionData) => {
 export const deleteInterview = async (interviewId) => {
     return await Interview.findByIdAndDelete(interviewId);
 };
+
+export const updateInterviewEvaluation = async ( interviewId, evaluation, duration) => {
+
+    return await Interview.findByIdAndUpdate(
+        interviewId,
+        {
+            $set: {
+                questions: evaluation.questions,
+
+                overallScore: evaluation.overallScore,
+                overallFeedback: evaluation.overallFeedback,
+
+                strengths: evaluation.strengths,
+                weaknesses: evaluation.weaknesses,
+                suggestions: evaluation.suggestions,
+
+                duration,
+                completedAt: new Date(),
+                status: "Completed",
+            },
+        }, { new: true }
+    )
+}
