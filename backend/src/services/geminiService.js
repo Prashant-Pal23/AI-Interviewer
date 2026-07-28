@@ -1,12 +1,17 @@
 import ai from "../config/gemini.js";
 
 const parseGeminiResponse = (response) => {
-    return JSON.parse(
-        response.text
+    try {
+        const cleaned = response.text
             .replace(/```json/g, "")
             .replace(/```/g, "")
-            .trim()
-    );
+            .trim();
+
+        return JSON.parse(cleaned);
+    } catch (err) {
+        console.error("Gemini Response:", response.text);
+        throw new Error("Invalid Gemini JSON Response");
+    }
 };
 
 export const analyzeResumeATS = async (resumeText, jobDescription) => {
@@ -85,57 +90,141 @@ export const generateInterviewQuestions = async ({ jobRole, topic, difficulty, i
 };
 
 
-export const evaluateAnswer = async ({ question, answer }) => {
+// export const evaluateAnswer = async ({ question, answer }) => {
+//     const prompt = `
+//         You are an interview evaluator.
+//         Score must be between 0 and 10.
+
+//         Evaluation Criteria:
+//         - Technical correctness
+//         - Completeness
+//         - Clarity
+//         - Relevance
+
+//         Question: ${question}
+//         Candidate Answer: ${answer}
+
+//         Return ONLY JSON.
+
+//         {
+//         "score":8,
+//         "feedback":"...",
+//         "aiExpectedAnswer":"..."
+//         }
+//     `;
+
+//     const response = await ai.models.generateContent({
+//         model: "gemini-3.6-flash",
+//         contents: prompt,
+//     });
+
+//     return parseGeminiResponse(response);
+// };
+
+// export const generateInterviewReport = async ({ questions }) => {
+//     const prompt = `
+//         You are an interview evaluator.
+//         OverallScore must be between 0 and 100.
+
+//         Below is the complete interview.
+
+//         ${JSON.stringify(questions)}
+
+//         Generate the final report.
+
+//         Return ONLY JSON.
+
+//         {
+//         "overallScore":85,
+//         "overallFeedback":"",
+//         "strengths":[""],
+//         "weaknesses":[""],
+//         "suggestions":[""]
+//         }
+//     `;
+
+//     const response = await ai.models.generateContent({
+//         model: "gemini-3.6-flash",
+//         contents: prompt,
+//     });
+
+//     return parseGeminiResponse(response);
+
+// }
+
+
+export const evaluateEntireInterview = async ({ questions }) => {
+
     const prompt = `
-        You are an interview evaluator.
-        Score must be between 0 and 10.
+        You are an expert technical interviewer.
 
-        Evaluation Criteria:
-        - Technical correctness
-        - Completeness
-        - Clarity
-        - Relevance
+        Evaluate the COMPLETE interview.
 
-        Question: ${question}
-        Candidate Answer: ${answer}
+        For EVERY question:
 
-        Return ONLY JSON.
+        - Score from 0-10
+        - Give short feedback
+        - Give an ideal answer
+
+        After evaluating all questions,
+
+        generate
+
+        - overallScore (0-100)
+        - overallFeedback
+        - strengths
+        - weaknesses
+        - suggestions
+
+        Return ONLY valid JSON.
+
+        The JSON MUST have this exact structure:
 
         {
-        "score":8,
-        "feedback":"...",
-        "aiExpectedAnswer":"..."
+        "overallScore": 85,
+        "overallFeedback": "",
+        "strengths": [],
+        "weaknesses": [],
+        "suggestions": [],
+        "questions": [
+            {
+            "order": 1,
+            "question": "",
+            "concepts": [],
+            "difficulty": "",
+            "answer": "",
+            "answerDuration": 0,
+            "score": 8,
+            "feedback": "",
+            "aiExpectedAnswer": ""
+            }
+        ]
         }
-    `;
 
-    const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
-        contents: prompt,
-    });
+        Do not omit any field.
+        Do not add markdown.
+        Do not explain anything.
+        Return JSON only.
 
-    return parseGeminiResponse(response);
-};
+        Return the COMPLETE questions array.
 
-export const generateInterviewReport = async ({ questions }) => {
-    const prompt = `
-        You are an interview evaluator.
-        OverallScore must be between 0 and 100.
+        Do not remove or modify existing fields.
 
-        Below is the complete interview.
+        For every question return:
+
+        - order
+        - question
+        - concepts
+        - difficulty
+        - answer
+        - answerDuration
+        - score
+        - feedback
+        - aiExpectedAnswer
+
+        Interview:
 
         ${JSON.stringify(questions)}
-
-        Generate the final report.
-
-        Return ONLY JSON.
-
-        {
-        "overallScore":85,
-        "overallFeedback":"",
-        "strengths":[""],
-        "weaknesses":[""],
-        "suggestions":[""]
-        }
     `;
 
     const response = await ai.models.generateContent({
@@ -145,4 +234,4 @@ export const generateInterviewReport = async ({ questions }) => {
 
     return parseGeminiResponse(response);
 
-}
+};
