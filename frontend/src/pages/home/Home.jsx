@@ -1,4 +1,9 @@
+import { useNavigate } from "react-router-dom";
+
 const Home = () => {
+
+    const navigate = useNavigate();
+
     return (
         <div className="hero min-h-[80vh]">
             <div className="hero-content text-center">
@@ -12,7 +17,7 @@ const Home = () => {
                         improve your ATS score, and prepare for your dream job.
                     </p>
 
-                    <button className="btn btn-primary btn-lg">
+                    <button className="btn btn-primary btn-lg" onClick={() => navigate("/login")} >
                         Get Started
                     </button>
                 </div>
