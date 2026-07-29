@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const InterviewQuestionCard = ({ question, loading, onSubmit }) => {
+const InterviewQuestionCard = ({ question, loading, onSubmit, isLastQuestion }) => {
 
     const [answer, setAnswer] = useState("");
 
@@ -25,7 +25,7 @@ const InterviewQuestionCard = ({ question, loading, onSubmit }) => {
                 </h2>
 
                 <textarea
-                    className="textarea textarea-bordered h-40 mt-4"
+                    className="textarea textarea-bordered w-full h-40 mt-4"
                     placeholder="Write your answer..."
                     value={answer}
                     onChange={(e) =>
@@ -41,7 +41,9 @@ const InterviewQuestionCard = ({ question, loading, onSubmit }) => {
                     {
                         loading
                             ? "Submitting..."
-                            : "Next Question"
+                            : isLastQuestion
+                                ? "Submit Interview"
+                                : "Next Question"
                     }
                 </button>
 

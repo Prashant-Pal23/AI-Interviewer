@@ -102,6 +102,7 @@ const Interview = () => {
                     }
                     loading={loading}
                     onSubmit={handleSubmit}
+                    isLastQuestion={currentIndex === interview.questions.length - 1}
                 />
 
             </div>
